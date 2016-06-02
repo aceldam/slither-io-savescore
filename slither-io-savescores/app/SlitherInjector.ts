@@ -1,4 +1,6 @@
 ﻿namespace slither.io {
+    ///
+
     export class SlitherInjector {
         private handle: number;
         private timerStopped: boolean;
@@ -16,40 +18,31 @@
             var lastUsername = db.loadUsername();
 
             if (lastUsername !== null) {
+                // update nick input box with last used username and display highest score for same
                 $("#nick").val(lastUsername);
                 var highestScore = this.db.loadHighestScore(lastUsername);
                 SlitherInjector.displayBestScore(highestScore);
             }
 
-            $("#playh div").on("click", (evt: JQueryEventObject) => {
-                this.timerStopped = false;
-                this.handle = setInterval(() => {
-                    if (this.timerStopped) {
-                        return;
-                    }
-                    console.log("waitForLastScore");
-                    var $lastScore = $("#lastscore");
+            $("#lastscore").on("DOMSubtreeModified", () => {
+                console.log("lastscore changed");
 
-                    if ($lastScore.length) {
-                        // pskh is the loader that shows after one has pressed play
-                        if ($lastScore.find("b").length && !$("#pskh").is(":visible")) {
-                            clearInterval(this.handle);
-                            this.timerStopped = true;
+                var $lastScore = $("#lastscore b");
 
-                            var lastScore = $lastScore.find("b").text();
+                if ($lastScore.text() !== null && $lastScore.text() !== "") {
+                    var lastScore = $lastScore.text();
 
-                            var userName = $("#nick").val();
-                            this.db.saveUsername(userName);
+                    var userName = $("#nick").val();
+                    this.db.saveUsername(userName);
 
-                            console.log("Saving lastscore: " + lastScore);
+                    console.log("Saving lastscore: " + lastScore);
 
-                            this.db.saveScore(new slither.io.Score(userName, parseInt(lastScore, 10), new Date()));
+                    this.db.saveScore(new slither.io.Score(userName, parseInt(lastScore, 10), new Date()));
 
-                            var highestScore = this.db.loadHighestScore(userName);
-                            SlitherInjector.displayBestScore(highestScore);
-                        }
-                    }
-                }, 1000);
+                    var highestScore = this.db.loadHighestScore(userName);
+                    SlitherInjector.displayBestScore(highestScore);
+
+                }
             });
         }
 
